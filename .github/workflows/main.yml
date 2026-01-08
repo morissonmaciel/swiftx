@@ -6,8 +6,37 @@ on:
   pull_request:
     branches: [ main ]
 
+  validate:
+    name: Validate Title and Description
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Pull Request
+        if: github.event_name == 'pull_request'
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_BODY="${{ github.event.pull_request.body }}"
+          
+          # Check if title is not empty and has minimum length
+          if [ -z "$PR_TITLE" ] || [ ${#PR_TITLE} -lt 5 ]; then
+            echo "❌ PR title is required and must be at least 5 characters"
+            echo "Current title length: ${#PR_TITLE}"
+            exit 1
+          fi
+          
+          # Check if description is not empty and has minimum length
+          if [ -z "$PR_BODY" ] || [ ${#PR_BODY} -lt 20 ]; then
+            echo "❌ PR description is required and must be at least 20 characters"
+            echo "Current description length: ${#PR_BODY}"
+            exit 1
+          fi
+          
+          echo "✅ PR validation passed!"
+          echo "   Title: $PR_TITLE"
+          echo "   Description length: ${#PR_BODY} characters"
+
 jobs:
   test:
+      needs: validate
     runs-on: ubuntu-latest
 
     strategy:
