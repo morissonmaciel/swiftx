@@ -1,12 +1,15 @@
 /**
  * Converts virtual elements to real DOM nodes.
  */
-export function swiftxToDOM(element) {
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const XLINK_NS = 'http://www.w3.org/1999/xlink';
+
+export function swiftxToDOM(element, svgContext = false) {
     if (!element) return document.createTextNode('')
 
     // Execute functional components
     if (typeof element.tag === 'function') {
-        return swiftxToDOM(element.tag(element.props, element.children))
+        return swiftxToDOM(element.tag(element.props, element.children), svgContext)
     }
 
     // Pass through real DOM nodes
@@ -21,7 +24,10 @@ export function swiftxToDOM(element) {
 
     if (typeof element === 'string') return document.createTextNode(element)
 
-    const node = document.createElement(element.tag)
+    const isSvg = svgContext || element.tag === 'svg'
+    const node = isSvg
+        ? document.createElementNS(SVG_NS, element.tag)
+        : document.createElement(element.tag)
 
     if (element.props) {
         for (const [key, value] of Object.entries(element.props)) {
@@ -45,7 +51,11 @@ export function swiftxToDOM(element) {
             if (value === true) {
                 node.setAttribute(key, '')
             } else if (value !== false && value !== null && value !== undefined) {
-                node.setAttribute(key, value)
+                if (isSvg && key === 'xlink:href') {
+                    node.setAttributeNS(XLINK_NS, 'xlink:href', value)
+                } else {
+                    node.setAttribute(key, value)
+                }
             }
         }
     }
@@ -58,7 +68,7 @@ export function swiftxToDOM(element) {
 
     if (element.children) {
         for (const child of element.children) {
-            node.appendChild(swiftxToDOM(child))
+            node.appendChild(swiftxToDOM(child, isSvg))
         }
     }
 
