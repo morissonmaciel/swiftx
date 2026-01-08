@@ -40,6 +40,7 @@ npm install swiftx
 - [Refs](./refs.md) - `useRef` for DOM access
 - [Lifecycle](./lifecycle.md) - `whenReady`
 - [JSX](./jsx.md) - optional JSX usage
+- [SVG Components](./svg.md) - inline SVG via SVGR
 
 ### Router
 

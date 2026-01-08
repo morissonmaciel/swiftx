@@ -8,6 +8,31 @@ test('Swiftx.render mounts content into a container', () => {
     assert.equal(container.querySelector('#root')?.textContent, 'Hello');
 });
 
+test('Swiftx renders SVG elements with the proper namespace', () => {
+    const container = document.createElement('div');
+    const view = Swiftx('svg', { width: '10', height: '10' }, [
+        Swiftx('circle', { cx: '5', cy: '5', r: '4', fill: 'currentColor' })
+    ]);
+
+    Swiftx.render(view, container);
+
+    const svg = container.querySelector('svg');
+    const circle = container.querySelector('circle');
+    assert.ok(svg);
+    assert.ok(circle);
+    assert.equal(svg.namespaceURI, 'http://www.w3.org/2000/svg');
+    assert.equal(circle.namespaceURI, 'http://www.w3.org/2000/svg');
+});
+
+test('Swiftx renders HTML elements without the SVG namespace', () => {
+    const container = document.createElement('div');
+    Swiftx.render(Swiftx('div', { id: 'box' }, 'Hi'), container);
+
+    const div = container.querySelector('div');
+    assert.ok(div);
+    assert.equal(div.namespaceURI, 'http://www.w3.org/1999/xhtml');
+});
+
 test('Show toggles content based on state', () => {
     const visible = useState(true);
     const container = document.createElement('div');
