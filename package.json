@@ -1,0 +1,43 @@
+{
+    "name": "swiftx",
+    "version": "1.0.0",
+    "description": "Swiftx: ultra-lightweight reactive UI framework with a minimal router and keyed list rendering",
+    "license": "ISC",
+    "author": "@morissonmaciel",
+    "type": "module",
+    "main": "./index.mjs",
+    "module": "./index.mjs",
+    "types": "./index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./index.d.ts",
+            "import": "./index.mjs"
+        },
+        "./router": {
+            "types": "./router.d.ts",
+            "import": "./router.mjs"
+        },
+        "./@types": {
+            "types": "./types/index.d.ts"
+        },
+        "./router/@types": {
+            "types": "./types/router.d.ts"
+        }
+    },
+    "files": [
+        "index.mjs",
+        "index.d.ts",
+        "router.mjs",
+        "router.d.ts",
+        "types",
+        "src/swiftx",
+        "src/swiftx-router",
+        "src/swiftx-jsx.d.ts"
+    ],
+    "scripts": {
+        "test": "node --test --import ./tests/setup-dom.mjs"
+    },
+    "devDependencies": {
+        "jsdom": "^26.0.0"
+    }
+}
