@@ -1,0 +1,52 @@
+docs:
+  - title: Getting Started
+    items:
+      - title: Home
+        url: /swiftx/
+      - title: Getting Started
+        url: /swiftx/getting-started
+
+  - title: Core Concepts
+    items:
+      - title: Core Overview
+        url: /swiftx/core
+      - title: Elements
+        url: /swiftx/elements
+      - title: Rendering
+        url: /swiftx/rendering
+      - title: State & useState
+        url: /swiftx/state
+      - title: Effects
+        url: /swiftx/effects
+      - title: Directives
+        url: /swiftx/directives
+      - title: Refs
+        url: /swiftx/refs
+      - title: Lifecycle
+        url: /swiftx/lifecycle
+      - title: JSX
+        url: /swiftx/jsx
+
+  - title: Router
+    items:
+      - title: Router Overview
+        url: /swiftx/router
+      - title: Routes
+        url: /swiftx/router-routes
+      - title: Layouts
+        url: /swiftx/router-layouts
+      - title: Navigation
+        url: /swiftx/router-navigation
+
+  - title: Examples
+    items:
+      - title: Examples Overview
+        url: /swiftx/examples
+      - title: Counter
+        url: /swiftx/examples-counter
+      - title: Todo List
+        url: /swiftx/examples-todo
+      - title: Router Layout
+        url: /swiftx/examples-router-layout
+      - title: Async Data
+        url: /swiftx/examples-async

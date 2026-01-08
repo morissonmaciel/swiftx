@@ -4,3 +4,10 @@ theme: jekyll-theme-minimal
 url: https://morissonmaciel.github.io/swiftx
 baseurl: /swiftx
 markdown: kramdown
+nav:
+  - title: Home
+    url: /
+  - title: Documentation
+    url: /swiftx/
+  - title: GitHub
+    url: https://github.com/morissonmaciel/swiftx
