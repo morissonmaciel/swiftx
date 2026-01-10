@@ -48,3 +48,37 @@ Swiftx.ForEach(items, { key: 'id' }, (item, index) =>
     Swiftx('li', `${index + 1}. ${item.label}`)
 );
 ```
+
+### Form Binding Example
+
+You can bind input fields to items in a collection and derive form state.
+
+```javascript
+const users = Swiftx.useState([
+    { id: 1, name: '' },
+    { id: 2, name: '' }
+]);
+const disabled = users.map((list) =>
+    !list.every((user) => user.name.trim().length > 0)
+);
+
+const Form = () => (
+    Swiftx('form', [
+        Swiftx('div', [
+            Swiftx.ForEach(users, 'id', (user, index) =>
+                Swiftx('input', {
+                    type: 'text',
+                    value: user.name,
+                    change: (event) => {
+                        const next = users.get().map((item, i) =>
+                            i === index ? { ...item, name: event.target.value } : item
+                        );
+                        users.set(next);
+                    }
+                })
+            )
+        ]),
+        Swiftx('button', { type: 'submit', disabled }, 'Submit')
+    ])
+);
+```

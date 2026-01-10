@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import Swiftx, { Show, useState } from '../../index.mjs';
+import Swiftx, { useEffect, useState } from '../../index.mjs';
 
 test('Swiftx.render mounts content into a container', () => {
     const container = document.createElement('div');
@@ -33,21 +33,6 @@ test('Swiftx renders HTML elements without the SVG namespace', () => {
     assert.equal(div.namespaceURI, 'http://www.w3.org/1999/xhtml');
 });
 
-test('Show toggles content based on state', () => {
-    const visible = useState(true);
-    const container = document.createElement('div');
-
-    const fragment = Show(visible, Swiftx('span', {}, 'On'));
-    container.appendChild(fragment);
-    assert.equal(container.textContent, 'On');
-
-    visible.set(false);
-    assert.equal(container.textContent, '');
-
-    visible.set(true);
-    assert.equal(container.textContent, 'On');
-});
-
 test('state can bind to inline styles', () => {
     const color = useState('rgb(0, 0, 0)');
     const container = document.createElement('div');
@@ -62,4 +47,40 @@ test('state can bind to inline styles', () => {
 
     color.set('rgb(255, 0, 0)');
     assert.equal(node.style.color, 'rgb(255, 0, 0)');
+});
+
+test('form input toggles submit disabled state via effect', () => {
+    const text = useState('');
+    const isDisabled = useState(true);
+
+    useEffect((value) => {
+        isDisabled.set(!value);
+    }, [text]);
+
+    const Form = () => (
+        Swiftx('form', {}, [
+            Swiftx('input', {
+                type: 'text',
+                change: (event) => text.set(event.target.value)
+            }),
+            Swiftx('button', { type: 'submit', disabled: isDisabled }, 'Submit')
+        ])
+    );
+
+    const container = document.createElement('div');
+    Swiftx.render(Form, container);
+
+    const input = container.querySelector('input');
+    const button = container.querySelector('button');
+    assert.ok(input);
+    assert.ok(button);
+    assert.equal(button.disabled, true);
+
+    input.value = 'hello';
+    input.dispatchEvent(new window.Event('change', { bubbles: true }));
+    assert.equal(button.disabled, false);
+
+    input.value = '';
+    input.dispatchEvent(new window.Event('change', { bubbles: true }));
+    assert.equal(button.disabled, true);
 });

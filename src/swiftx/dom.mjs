@@ -4,6 +4,39 @@
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const XLINK_NS = 'http://www.w3.org/1999/xlink';
 
+function applyProp(node, key, value, isSvg) {
+    if (value === true) {
+        node.setAttribute(key, '');
+        if (!isSvg && key in node) {
+            node[key] = true;
+        }
+        return;
+    }
+
+    if (value === false || value === null || value === undefined) {
+        node.removeAttribute(key);
+        if (!isSvg && key in node) {
+            node[key] = false;
+        }
+        return;
+    }
+
+    if (!isSvg && key in node) {
+        try {
+            node[key] = value;
+            return;
+        } catch {
+            // Fallback to attribute for non-assignable props.
+        }
+    }
+
+    if (isSvg && key === 'xlink:href') {
+        node.setAttributeNS(XLINK_NS, 'xlink:href', value);
+    } else {
+        node.setAttribute(key, value);
+    }
+}
+
 export function swiftxToDOM(element, svgContext = false) {
     if (!element) return document.createTextNode('')
 
@@ -48,15 +81,12 @@ export function swiftxToDOM(element, svgContext = false) {
                 }
                 continue
             }
-            if (value === true) {
-                node.setAttribute(key, '')
-            } else if (value !== false && value !== null && value !== undefined) {
-                if (isSvg && key === 'xlink:href') {
-                    node.setAttributeNS(XLINK_NS, 'xlink:href', value)
-                } else {
-                    node.setAttribute(key, value)
-                }
+            if (value && typeof value.get === 'function' && typeof value.subscribe === 'function') {
+                applyProp(node, key, value.get(), isSvg);
+                value.subscribe((nextVal) => applyProp(node, key, nextVal, isSvg));
+                continue;
             }
+            applyProp(node, key, value, isSvg);
         }
     }
 

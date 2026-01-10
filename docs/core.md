@@ -16,6 +16,7 @@ Swiftx is intentionally small: a VDOM factory, a tag DSL, reactive state, immedi
 - **Directives**: `Show` and `ForEach` handle conditional rendering and keyed lists.
 - **Refs**: `useRef` gives you a stable `{ current }` pointer.
 - **Lifecycle**: `whenReady` runs after the current render pass.
+- **Reactive props**: pass state atoms directly to element props like `disabled` or `value`.
 
 ## Read Next
 

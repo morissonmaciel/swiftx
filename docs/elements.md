@@ -46,6 +46,28 @@ const Button = () => (
 );
 ```
 
+## Reactive Props
+
+You can pass a state atom directly as a prop value. Swiftx will update the DOM property/attribute when the state changes.
+
+```javascript
+import Swiftx from 'swiftx';
+
+const name = Swiftx.useState('');
+const isDisabled = name.map((value) => !value);
+
+const Form = () => (
+    Swiftx('form', [
+        Swiftx('input', {
+            type: 'text',
+            value: name,
+            change: (event) => name.set(event.target.value)
+        }),
+        Swiftx('button', { type: 'submit', disabled: isDisabled }, 'Save')
+    ])
+);
+```
+
 ## Children
 
 Children can be strings, VDOM nodes, arrays, or nested component results.
