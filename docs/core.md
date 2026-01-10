@@ -13,6 +13,7 @@ Swiftx is intentionally small: a VDOM factory, a tag DSL, reactive state, immedi
 - **Render**: mount your root with `Swiftx.render`.
 - **State**: `useState` returns a state atom with `get`, `set`, `subscribe`, and `map`.
 - **Effects**: `useEffect` runs immediately for predictable setup and can return cleanup.
+- **Computed**: `Compute` / `useMemo` derives read-only state from other atoms.
 - **Directives**: `Show` and `ForEach` handle conditional rendering and keyed lists.
 - **Refs**: `useRef` gives you a stable `{ current }` pointer.
 - **Lifecycle**: `whenReady` runs after the current render pass.

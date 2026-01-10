@@ -47,6 +47,22 @@ const unsubscribe = count.subscribe((value) => {
 // Later, call unsubscribe() to stop listening.
 ```
 
+## Computed State (Compute / useMemo)
+
+Use `Swiftx.Compute` (or `useMemo`) to derive a read-only state atom from one or more states.
+
+```javascript
+const first = Swiftx.useState('Ada');
+const last = Swiftx.useState('Lovelace');
+
+const fullName = Swiftx.Compute([first, last], (a, b) => `${a} ${b}`);
+// or: const fullName = Swiftx.useMemo([first, last], (a, b) => `${a} ${b}`);
+
+const View = () => (
+    Swiftx('p', ['Name: ', fullName])
+);
+```
+
 ## Reactive Props
 
 You can pass state atoms directly to element props to keep the DOM in sync.
