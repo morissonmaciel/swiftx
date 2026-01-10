@@ -190,6 +190,11 @@ test('RouterStack does not keep expenses list when linking to expense details (w
 
     const container = document.createElement('div');
     window.__weakControlActive = true;
+    const originalWarn = console.warn;
+    const warnings = [];
+    console.warn = (...args) => {
+        warnings.push(args.join(' '));
+    };
 
     const ExpensesByAccount = ({ navigation }) => {
         return Swiftx('div', { id: 'expense-list' }, [
@@ -231,8 +236,15 @@ test('RouterStack does not keep expenses list when linking to expense details (w
     try {
         assert.equal(container.querySelector('#expense-list')?.textContent, 'Go to expense');
         assert.equal(container.querySelector('#expense-detail'), null);
+        assert.equal(
+            warnings.some((message) =>
+                message.includes('Swiftx.Show: render superseded by a newer update')
+            ),
+            true
+        );
     } finally {
         window.__weakControlActive = false;
+        console.warn = originalWarn;
     }
 });
 
