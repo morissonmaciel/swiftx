@@ -46,3 +46,23 @@ const unsubscribe = count.subscribe((value) => {
 
 // Later, call unsubscribe() to stop listening.
 ```
+
+## Reactive Props
+
+You can pass state atoms directly to element props to keep the DOM in sync.
+
+```javascript
+const name = Swiftx.useState('');
+const disabled = name.map((value) => !value);
+
+const Form = () => (
+    Swiftx('form', [
+        Swiftx('input', {
+            type: 'text',
+            value: name,
+            change: (event) => name.set(event.target.value)
+        }),
+        Swiftx('button', { disabled }, 'Save')
+    ])
+);
+```
