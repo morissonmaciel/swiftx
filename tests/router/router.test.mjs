@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import Swiftx, { BrowserRouter, RouterStack, Route } from '../../index.mjs';
+import Swiftx, { BrowserRouter, RouterStack, Route, Link } from '../../index.mjs';
 
 test('Route builder creates a rule with render', () => {
     const rule = Route.on('/').render(() => 'ok');
@@ -143,4 +143,202 @@ test('Route state updates continue after navigation without errors', async () =>
     assert.equal(container.textContent.includes('Route 2'), true);
     assert.equal(container.querySelector('#route-one'), null);
     assert.ok(secondTickCount > firstTickCount);
+});
+
+test('RouterStack does not keep expenses list when linking to expense details', async () => {
+    window.history.replaceState({}, '', '/expenses/10');
+    window.dispatchEvent(new window.PopStateEvent('popstate'));
+
+    const container = document.createElement('div');
+
+    const ExpensesByAccount = ({ navigation }) => {
+        return Swiftx('div', { id: 'expense-list' }, [
+            Swiftx(Link, { to: '/expense/10/99', navigation }, 'Go to expense')
+        ]);
+    };
+    const ExpenseDetails = () => Swiftx('div', { id: 'expense-detail' }, 'Expense Details');
+
+    const App = () => Swiftx(RouterStack, {
+        rootPath: '/',
+        rules: [
+            Route.on('/expenses/:accountId').render(ExpensesByAccount),
+            Route.on('/expense/:accountId/:expenseId').render(ExpenseDetails),
+            Route.notFound.render(() => Swiftx('div', {}, 'NF'))
+        ]
+    });
+
+    Swiftx.render(
+        Swiftx(BrowserRouter, {}, Swiftx(App)),
+        container
+    );
+
+    assert.equal(container.querySelector('#expense-list')?.textContent, 'Go to expense');
+    assert.equal(container.querySelector('#expense-detail'), null);
+
+    const link = container.querySelector('a');
+    assert.ok(link);
+    link.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(container.querySelector('#expense-detail')?.textContent, 'Expense Details');
+    assert.equal(container.querySelector('#expense-list'), null);
+});
+
+test('RouterStack does not keep expenses list when linking to expense details (weak control)', async () => {
+    window.history.replaceState({}, '', '/expenses/10');
+    window.dispatchEvent(new window.PopStateEvent('popstate'));
+
+    const container = document.createElement('div');
+    window.__weakControlActive = true;
+
+    const ExpensesByAccount = ({ navigation }) => {
+        return Swiftx('div', { id: 'expense-list' }, [
+            Swiftx(Link, { to: '/expense/10/99', navigation }, 'Go to expense')
+        ]);
+    };
+    const ExpenseDetails = ({ navigation, accountId }) => {
+        Swiftx.useEffect(() => {
+            if (window.__weakControlActive) {
+                navigation.push(`/expenses/${accountId}`);
+            }
+        }, []);
+        return Swiftx('div', { id: 'expense-detail' }, 'Expense Details');
+    };
+
+    const App = () => Swiftx(RouterStack, {
+        rootPath: '/',
+        rules: [
+            Route.on('/expenses/:accountId').render(ExpensesByAccount),
+            Route.on('/expense/:accountId/:expenseId').render(ExpenseDetails),
+            Route.notFound.render(() => Swiftx('div', {}, 'NF'))
+        ]
+    });
+
+    Swiftx.render(
+        Swiftx(BrowserRouter, {}, Swiftx(App)),
+        container
+    );
+
+    assert.equal(container.querySelector('#expense-list')?.textContent, 'Go to expense');
+    assert.equal(container.querySelector('#expense-detail'), null);
+
+    const link = container.querySelector('a');
+    assert.ok(link);
+    link.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    try {
+        assert.equal(container.querySelector('#expense-list')?.textContent, 'Go to expense');
+        assert.equal(container.querySelector('#expense-detail'), null);
+    } finally {
+        window.__weakControlActive = false;
+    }
+});
+
+test('RouterStack layout renders only the matched expense route', async () => {
+    window.history.replaceState({}, '', '/expenses/10');
+    window.dispatchEvent(new window.PopStateEvent('popstate'));
+
+    const container = document.createElement('div');
+
+    const Layout = ({ routerOutlet }) => (
+        Swiftx('section', { id: 'layout' }, [
+            Swiftx('header', {}, 'Header'),
+            routerOutlet()
+        ])
+    );
+
+    const ExpensesByAccount = ({ navigation }) => (
+        Swiftx('div', { id: 'expense-list' }, [
+            Swiftx(Link, { to: '/expense/10/99', navigation }, 'Go to expense')
+        ])
+    );
+    const ExpenseDetails = () => Swiftx('div', { id: 'expense-detail' }, 'Expense Details');
+
+    const App = () => Swiftx(RouterStack, {
+        rootPath: '/',
+        rules: [
+            Route.on('/expenses/:accountId').render(ExpensesByAccount),
+            Route.on('/expense/:accountId/:expenseId').render(ExpenseDetails),
+            Route.notFound.render(() => Swiftx('div', {}, 'NF'))
+        ],
+        layout: Layout
+    });
+
+    Swiftx.render(
+        Swiftx(BrowserRouter, {}, Swiftx(App)),
+        container
+    );
+
+    assert.equal(container.querySelector('#layout')?.textContent.includes('Header'), true);
+    assert.equal(container.querySelector('#expense-list')?.textContent, 'Go to expense');
+    assert.equal(container.querySelector('#expense-detail'), null);
+
+    const link = container.querySelector('a');
+    assert.ok(link);
+    link.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(container.querySelector('#expense-detail')?.textContent, 'Expense Details');
+    assert.equal(container.querySelector('#expense-list'), null);
+});
+
+test('RouterStack layout handles ForEach list navigation to expense details', async () => {
+    window.history.replaceState({}, '', '/expenses/10');
+    window.dispatchEvent(new window.PopStateEvent('popstate'));
+
+    const container = document.createElement('div');
+
+    const Layout = ({ routerOutlet }) => (
+        Swiftx('section', { id: 'layout' }, [
+            Swiftx('header', {}, 'Header'),
+            routerOutlet()
+        ])
+    );
+
+    const ExpensesByAccount = ({ navigation }) => {
+        const items = Swiftx.useState([
+            { id: '1', label: 'First' },
+            { id: '2', label: 'Second' }
+        ]);
+        return Swiftx('ul', { id: 'expense-list' }, [
+            Swiftx.ForEach(items, 'id', (expense) => (
+                Swiftx('li', {}, [
+                    Swiftx(Link, { to: `/expense/10/${expense.id}`, navigation }, expense.label)
+                ])
+            ))
+        ]);
+    };
+
+    const ExpenseDetails = ({ expenseId }) => (
+        Swiftx('div', { id: 'expense-detail' }, `Expense ${expenseId}`)
+    );
+
+    const App = () => Swiftx(RouterStack, {
+        rootPath: '/',
+        rules: [
+            Route.on('/expenses/:accountId').render(ExpensesByAccount),
+            Route.on('/expense/:accountId/:expenseId').render(ExpenseDetails),
+            Route.notFound.render(() => Swiftx('div', {}, 'NF'))
+        ],
+        layout: Layout
+    });
+
+    Swiftx.render(
+        Swiftx(BrowserRouter, {}, Swiftx(App)),
+        container
+    );
+
+    await new Promise((resolve) => queueMicrotask(resolve));
+
+    const links = Array.from(container.querySelectorAll('#expense-list a'));
+    assert.equal(links.length, 2);
+    assert.equal(container.querySelector('#expense-detail'), null);
+
+    links[1].dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(container.querySelector('#expense-detail')?.textContent, 'Expense 2');
+    assert.equal(container.querySelector('#expense-list'), null);
 });

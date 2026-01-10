@@ -1,4 +1,5 @@
 import Swiftx from '../swiftx/index.mjs';
+import { isDev } from '../swiftx/dev.mjs';
 
 /**
  * Reactive state containing the current window location path.
@@ -90,7 +91,7 @@ export const BrowserRouter = (props, children) => {
     const resolved = typeof content === 'function' ? Swiftx(content) : content;
 
     Swiftx.whenReady(() => {
-        if (_routerStackCount === 0) {
+        if (_routerStackCount === 0 && isDev()) {
             console.error("Swiftx.BrowserRouter: No RouterStack found inside the Router tree. Please add a RouterStack.");
         }
     });

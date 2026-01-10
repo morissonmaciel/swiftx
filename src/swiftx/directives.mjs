@@ -1,4 +1,5 @@
 import { swiftxToDOM } from './dom.mjs';
+import { isDev } from './dev.mjs';
 
 /**
  * Conditional rendering
@@ -6,12 +7,21 @@ import { swiftxToDOM } from './dom.mjs';
 export function Show(state, vdom) {
     const anchor = document.createComment('swiftx-show')
     let el = null
+    let renderToken = 0
 
     const update = (visible) => {
+        const token = ++renderToken
         if (visible) {
             if (el) el.remove();
             const content = typeof vdom === 'function' ? vdom() : vdom;
-            el = swiftxToDOM(content)
+            const nextEl = swiftxToDOM(content)
+            if (token !== renderToken) {
+                if (isDev()) {
+                    console.warn('Swiftx.Show: render superseded by a newer update (possible redirect inside useEffect).');
+                }
+                return;
+            }
+            el = nextEl
             anchor.parentNode?.insertBefore(el, anchor)
         } else if (!visible && el) {
             el.remove(); el = null
@@ -22,9 +32,17 @@ export function Show(state, vdom) {
 
     const frag = document.createDocumentFragment()
     if (state.get()) {
+        const token = ++renderToken
         const content = typeof vdom === 'function' ? vdom() : vdom;
-        el = swiftxToDOM(content)
-        frag.append(el)
+        const nextEl = swiftxToDOM(content)
+        if (token === renderToken) {
+            el = nextEl
+            frag.append(el)
+        } else {
+            if (isDev()) {
+                console.warn('Swiftx.Show: render superseded by a newer update (possible redirect inside useEffect).');
+            }
+        }
     }
     frag.append(anchor)
     return frag
